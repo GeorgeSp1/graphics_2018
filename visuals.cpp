@@ -82,32 +82,11 @@ void Render()
 	//glTranslatef(0.0f, 0.0f, tz);
 	/*glTranslatef(0,0,-50);*/
 
-	glTranslatef(0.0, 0.0, -100);
+	glTranslatef(0.0, 0.0, -150);
 	glRotatef(tx, 1.0, 0.0, 0.0);
 	glRotatef(ty, 0.0, 1.0, 0.0);
 	glRotatef(tz, 0.0, 0.0, 1.0);
 
-	//GLfloat light_position[] = { 0.0, 0.0, -500.0, 1.0 };
-	//glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-
-	/*GLUquadricObj *sphere = NULL;
-	sphere = gluNewQuadric();*/
-
-	glPushMatrix();
-	glColor3f(1.0, 1.0, 0.0);
-	glTranslatef(0.0, 0.0, 0.0);
-	glutSolidSphere(SUN_RADIUS, 30, 24);
-	glColor4f(1.0, 1.0, 0.0, 0.2);
-
-	GLUquadricObj *quadric;
-	quadric = gluNewQuadric();
-
-	gluQuadricDrawStyle(quadric, GLU_FILL);
-	gluSphere(quadric, sun_radius_now + 2.1, 30, 24);
-	
-	//glutSolidSphere(sun_radius_now+2.1, 30, 24);
-	glPopMatrix();
-	
 	/* Render planet (Earth)*/
 	glPushMatrix();
 	glColor3f(0.0, 0.0, 1.0);
@@ -120,13 +99,30 @@ void Render()
 
 	/* Render another planet (Moon)*/
 	glPushMatrix();
-	glColor3f(0.03, 0.12, 0.075);
+	glColor3f(0.5, 0.5, 0.5);
 	glRotatef(planet_rotx, 0.0, 0.5, 0.0);
 	glRotatef(planet_roty, 0.8, 0.0, 0.0);
-	glTranslatef(earth_x, (earth_y+20.0), (earth_z+20.0));
+	glTranslatef(earth_x, (earth_y + 20.0), (earth_z + 20.0));
 	glScalef(0.005, 0.0045, 0.005);
 
 	DisplayModel(md);
+	glPopMatrix();
+	
+	
+	//GLfloat light_position[] = { 0.0, 0.0, -500.0, 1.0 };
+	//glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+
+
+	/* Render Sun*/
+	glPushMatrix();
+
+	glColor3f(1.0, 1.0, 0.0);
+	glTranslatef(0.0, 0.0, 0.0);
+	glutSolidSphere(SUN_RADIUS, 30, 24);
+
+	glColor4f(1.0, 1.0, 0.0, 0.2);
+	glutSolidSphere(sun_radius_now+2.1, 30, 24);
+	
 	glPopMatrix();
 
 	for (int i = 0; i != STAR_COUNT; i++) {
@@ -181,12 +177,14 @@ void DisplayModel(model *md)
 
 	for (int i = 0; i < md->faces; i++)
 	{
-		glNormal3f(md->obj_normals[md->obj_faces[i].vtn[0]].x, md->obj_normals[md->obj_faces[i].vtn[0]].y, md->obj_normals[md->obj_faces[i].vtn[0]].z);
 		glVertex3f(md->obj_points[md->obj_faces[i].vtx[0] - 1].x, md->obj_points[md->obj_faces[i].vtx[0] - 1].y, md->obj_points[md->obj_faces[i].vtx[0] - 1].z);
-		glNormal3f(md->obj_normals[md->obj_faces[i].vtn[1]].x, md->obj_normals[md->obj_faces[i].vtn[1]].y, md->obj_normals[md->obj_faces[i].vtn[1]].z);
-		glVertex3f(md->obj_points[md->obj_faces[i].vtx[1] - 1].x, md->obj_points[md->obj_faces[i].vtx[1] - 1].y, md->obj_points[md->obj_faces[i].vtn[1] - 1].z);
-		glNormal3f(md->obj_normals[md->obj_faces[i].vtn[2]].x, md->obj_normals[md->obj_faces[i].vtn[2]].y, md->obj_normals[md->obj_faces[i].vtn[2]].z);
+		glVertex3f(md->obj_points[md->obj_faces[i].vtx[1] - 1].x, md->obj_points[md->obj_faces[i].vtx[1] - 1].y, md->obj_points[md->obj_faces[i].vtx[1] - 1].z);
 		glVertex3f(md->obj_points[md->obj_faces[i].vtx[2] - 1].x, md->obj_points[md->obj_faces[i].vtx[2] - 1].y, md->obj_points[md->obj_faces[i].vtx[2] - 1].z);
+
+		glNormal3f(md->obj_normals[md->obj_faces[i].vtn[0] - 1].x, md->obj_normals[md->obj_faces[i].vtn[0] - 1].y, md->obj_normals[md->obj_faces[i].vtn[0] - 1].z);
+		glNormal3f(md->obj_normals[md->obj_faces[i].vtn[1] - 1].x, md->obj_normals[md->obj_faces[i].vtn[1] - 1].y, md->obj_normals[md->obj_faces[i].vtn[1] - 1].z);
+		glNormal3f(md->obj_normals[md->obj_faces[i].vtn[2] - 1].x, md->obj_normals[md->obj_faces[i].vtn[2] - 1].y, md->obj_normals[md->obj_faces[i].vtn[2] - 1].z);
+		
 	}
 
 	glEnd();
@@ -273,12 +271,21 @@ void Setup()  // TOUCH IT !!
 	initModel(&md);
 	ReadFile(md);
 
+
+	//enable extra light -- have to enable GL_LIGHTING GL_LIGHT0
+	/*GLfloat light_position[] = { 0.0, 0.0, -70.0, 1 };
+	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+
+	GLfloat diffuseLight[] = { 0.5, 0.5, 0.5, 1.0 };
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuseLight);*/
+
 	// Parameter handling
 	glShadeModel(GL_SMOOTH);
 
 
-	glEnable(GL_LIGHTING);
-	glEnable(GL_LIGHT0);
+	//enable if we want lighting
+	//glEnable(GL_LIGHTING);
+	//glEnable(GL_LIGHT0);
 
 
 	glEnable(GL_DEPTH_TEST);
@@ -293,10 +300,12 @@ void Setup()  // TOUCH IT !!
 
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-	//glEnable(GL_CULL_FACE);
+	glEnable(GL_CULL_FACE);
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+
 
 	// Black background
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
