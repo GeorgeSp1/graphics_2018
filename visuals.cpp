@@ -13,7 +13,7 @@
 
 
 
-#define SUN_RADIUS 28.0
+#define SUN_RADIUS 13.0
 #define STAR_COUNT 700
 #define STARS_RADIUS 0.05
 
@@ -26,15 +26,15 @@ bool x_flag = true;
 bool z_flag = true;
 
 point *stars[STAR_COUNT];
-static float sun_radius_now = SUN_RADIUS+1;
+static float sun_radius_now = SUN_RADIUS;
 static float sun_flickering_speed = 0.05;
 
 static float stars_radius_now = STARS_RADIUS;
 static float stars_flickering_speed = 0.00;
 
-float earth_x = 120;
+float earth_x = 100;
 float earth_y = 0;
-float earth_z = -200;
+float earth_z = 0;
 
 float earth_start_x = earth_x;
 float earth_start_y = earth_y;
@@ -42,10 +42,11 @@ float earth_start_z = earth_z;
 
 float moon_x = earth_x;
 float moon_y = earth_y + 50;
-float moon_z = earth_z-100;
+float moon_z = earth_z-50;
 
 // planets
 static float planet_rotx = 0.0;
+static float planet_roty = 0.0;
 static float rotating_speed = 1.5;
 
 // camera movement
@@ -53,20 +54,9 @@ static float tx = 0.0;
 static float ty = 0.0;
 static float tz = 0.0;
 
-void Render()
+void star_positions()
 {
-	//CLEARS FRAME BUFFER ie COLOR BUFFER& DEPTH BUFFER (1.0)
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // Clean up the colour of the window
-														 // and the depth buffer
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-
-	/*glTranslatef(0,0,-50);*/
-
-	glTranslatef(0.0, 0.0, -100);
-
-	GLfloat light_position[] = { 0.0, 10.0, tz, 1.0 };
-	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+	srand(time(NULL));
 
 	for (int i = 0; i < STAR_COUNT; i++) {
 		stars[i] = (point *)malloc(sizeof(point));
@@ -79,14 +69,51 @@ void Render()
 		stars[i]->z = LO + static_cast<float>(rand()) /
 			(static_cast<float>(RAND_MAX / (HI - LO)));
 	}
+}
 
-	srand(time(NULL));
+void Render()
+{
+	//CLEARS FRAME BUFFER ie COLOR BUFFER& DEPTH BUFFER (1.0)
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // Clean up the colour of the window
+														 // and the depth buffer
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
 
+	//glTranslatef(0.0f, 0.0f, tz);
+	/*glTranslatef(0,0,-50);*/
+
+	glTranslatef(0.0, 0.0, -100);
+	glRotatef(tx, 1.0, 0.0, 0.0);
+	glRotatef(ty, 0.0, 1.0, 0.0);
+	glRotatef(tz, 0.0, 0.0, 1.0);
+
+	//GLfloat light_position[] = { 0.0, 0.0, -500.0, 1.0 };
+	//glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+
+	/*GLUquadricObj *sphere = NULL;
+	sphere = gluNewQuadric();*/
+
+	glPushMatrix();
+	glColor3f(1.0, 1.0, 0.0);
+	glTranslatef(0.0, 0.0, 0.0);
+	glutSolidSphere(SUN_RADIUS, 30, 24);
+	glColor4f(1.0, 1.0, 0.0, 0.2);
+
+	GLUquadricObj *quadric;
+	quadric = gluNewQuadric();
+
+	gluQuadricDrawStyle(quadric, GLU_FILL);
+	gluSphere(quadric, sun_radius_now + 2.1, 30, 24);
+	
+	//glutSolidSphere(sun_radius_now+2.1, 30, 24);
+	glPopMatrix();
+	
 	/* Render planet (Earth)*/
 	glPushMatrix();
-	glColor3f(0.03, 0.12, 0.075);
+	glColor3f(0.0, 0.0, 1.0);
+	glRotatef(planet_rotx, 0.0, 0.5, 0.0);
 	glTranslatef(earth_x, earth_y, earth_z);
-	glScalef(0.035, 0.030, 0.05);
+	glScalef(0.01, 0.0087, 0.01);
 
 	DisplayModel(md);
 	glPopMatrix();
@@ -94,8 +121,10 @@ void Render()
 	/* Render another planet (Moon)*/
 	glPushMatrix();
 	glColor3f(0.03, 0.12, 0.075);
-	glTranslatef(moon_x, moon_y, moon_z);
-	glScalef(0.010, 0.010, 0.05);
+	glRotatef(planet_rotx, 0.0, 0.5, 0.0);
+	glRotatef(planet_roty, 0.8, 0.0, 0.0);
+	glTranslatef(earth_x, (earth_y+20.0), (earth_z+20.0));
+	glScalef(0.005, 0.0045, 0.005);
 
 	DisplayModel(md);
 	glPopMatrix();
@@ -109,29 +138,6 @@ void Render()
 		glutSolidSphere(stars_radius_now, 30, 24);
 		glPopMatrix();
 	}
-
-	//glColor4f(1, 1, 0,1);
-	//gluSphere(20.0,30,24);
-	//
-	//glColor4f(1, 1, 0, 0.85);
-	//gluSphere(25.0, 30, 24);
-
-	//glPushMatrix();
-	//glColor3f(1.0, 1.0, 0.0);
-	//glutSolidSphere(SUN_RADIUS, 30, 24);
-	//glColor4f(1.0, 1.0, 0.05, 0.0);
-	//glutSolidSphere(sun_radius_now, 30, 24);
-	//glPopMatrix();
-
-	glPushMatrix();
-	glColor3f(1.0, 0.90, 0.48);
-	glTranslatef(0.0, 0.0, -200);
-	glutSolidSphere(SUN_RADIUS, 30, 24);
-	glColor4f(1.0, 1.0, 0.0, 0.8);
-	glutSolidSphere(sun_radius_now, 30, 24);
-	glPopMatrix();
-
-
 
 
 	glutSwapBuffers();             // All drawing commands applied to the 
@@ -210,7 +216,7 @@ void Idle() {
 		// sun flickering
 		if (sun_radius_now < SUN_RADIUS)
 			sun_flickering_speed = -sun_flickering_speed;
-		if (sun_radius_now > SUN_RADIUS+1)
+		if (sun_radius_now > SUN_RADIUS+2)
 			sun_flickering_speed = -sun_flickering_speed;
 		sun_radius_now += sun_flickering_speed;
 
@@ -222,33 +228,40 @@ void Idle() {
 		stars_radius_now += stars_flickering_speed;
 
 
-		if (earth_x >= -earth_start_x && x_flag)
-		{
-			earth_x = earth_x - 0.8;
-		}
-		else
-		{
-			x_flag = false;
-			earth_x = earth_x + 0.8;
-			if (earth_x == earth_start_x) x_flag = true;
-		}
+		//if (earth_x >= -earth_start_x && x_flag)
+		//{
+		//	earth_x = earth_x - 1.0;
+		//}
+		//else
+		//{
+		//	x_flag = false;
+		//	earth_x = earth_x + 1.0;
+		//	if (earth_x == earth_start_x) x_flag = true;
+		//}
 
-		if (earth_z <= -earth_start_z && z_flag)
-		{
-			earth_z = earth_z + 0.6;
-			cout << "if" << endl;
-		}
-		else
-		{
-			cout << "else" << endl;
-			z_flag = false;
-			earth_z = earth_z - 0.6;
-			if (earth_z == earth_start_z ) z_flag = true;
-		}
+		//if ((earth_z <= (earth_start_z + 50)) && z_flag)
+		//{
+		//	earth_z = earth_z + 0.5;
+		//	//cout << "if" << endl;
+		//}
+		//else
+		//{
+		//	//cout << "else" << endl;
+		//	z_flag = false;
+		//	earth_z = earth_z - 0.5;
+		//	if (earth_z == (earth_start_z - 50)) z_flag = true;
+		//}
+
+		//if (earth_x == 0 || earth_z == -200)
+		//{
+		//	cout << "x= " << earth_x << endl;
+		//	cout << "z= " << earth_z << endl;
+		//}
+
 
 		// planets rotating
 		planet_rotx += rotating_speed;
-
+		planet_roty += rotating_speed + 1.0;
 
 
 	}
@@ -267,10 +280,12 @@ void Setup()  // TOUCH IT !!
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
 
+
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
 	glClearDepth(1);
 
+	star_positions();
 
 	// polygon rendering mode
 	glEnable(GL_COLOR_MATERIAL);
@@ -278,7 +293,7 @@ void Setup()  // TOUCH IT !!
 
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-	glEnable(GL_CULL_FACE);
+	//glEnable(GL_CULL_FACE);
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
