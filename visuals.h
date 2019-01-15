@@ -65,4 +65,5 @@ void Idle();
 void initModel(model **md);
 void ReadFile(model *md);
 void DisplayModel(model *md);
+void Keyboard(unsigned char key, int x, int y);
 
