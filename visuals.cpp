@@ -143,17 +143,17 @@ void Render()
 
 void Keyboard(unsigned char key, int x, int y) {
 	if (key == 'a')
-		ty += 0.5; // move left
+		ty += 0.5; // move y (-)
 	if (key == 'd')
-		ty -= 0.5; // move right
+		ty -= 0.5; // move y (-)
 	if (key == 'w')
-		tx += 0.5; // move up
+		tx += 0.5; // move x (-)
 	if (key == 's')
-		tx -= 0.5; // move down
+		tx -= 0.5; // move x (+)
 	if (key == '=')
-		tz += 0.5; // zoom in
+		tz += 0.5; // move z (+)
 	if (key == '-')
-		tz -= 0.5; // zoom out
+		tz -= 0.5; // move z (-)
 	if (key == 'q')
 		exit(EXIT_SUCCESS); // quit program
 	if (key == '\'')
@@ -204,7 +204,6 @@ void Resize(int w, int h)
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	//glOrtho(-400, 400, -400, 400, -500, 500);
 	gluPerspective(60.0, (float)w / (float)h, 1.0, 500.0);
 }
 
@@ -224,38 +223,6 @@ void Idle() {
 		if (stars_radius_now > 0.1)
 			stars_flickering_speed = -stars_flickering_speed;
 		stars_radius_now += stars_flickering_speed;
-
-
-		//if (earth_x >= -earth_start_x && x_flag)
-		//{
-		//	earth_x = earth_x - 1.0;
-		//}
-		//else
-		//{
-		//	x_flag = false;
-		//	earth_x = earth_x + 1.0;
-		//	if (earth_x == earth_start_x) x_flag = true;
-		//}
-
-		//if ((earth_z <= (earth_start_z + 50)) && z_flag)
-		//{
-		//	earth_z = earth_z + 0.5;
-		//	//cout << "if" << endl;
-		//}
-		//else
-		//{
-		//	//cout << "else" << endl;
-		//	z_flag = false;
-		//	earth_z = earth_z - 0.5;
-		//	if (earth_z == (earth_start_z - 50)) z_flag = true;
-		//}
-
-		//if (earth_x == 0 || earth_z == -200)
-		//{
-		//	cout << "x= " << earth_x << endl;
-		//	cout << "z= " << earth_z << endl;
-		//}
-
 
 		// planets rotating
 		planet_rotx += rotating_speed;
@@ -312,24 +279,6 @@ void Setup()  // TOUCH IT !!
 
 }
 
-void DrawCircle(float cx, float cy, float r, int num_segments)
-{
-	glBegin(GL_LINE_LOOP);
-	for (int ii = 0; ii < num_segments; ii++)
-	{
-		float theta = 2.0f * 3.1415926f * float(ii) / float(num_segments);//get the current angle
-
-		float x = r * cosf(theta);//calculate the x component
-		float y = r * sinf(theta);//calculate the y component
-
-		glVertex2f(x + cx, y + cy);//output vertex
-
-	}
-	glEnd();
-}
-
-
-
 void initModel(model **md) {
 
 	ifstream fp("planet.obj");
@@ -383,7 +332,6 @@ void ReadFile(model *md) {
 			string_stream >> md->obj_points[no_of_vertices].x;
 			string_stream >> md->obj_points[no_of_vertices].y;
 			string_stream >> md->obj_points[no_of_vertices].z;
-			//	cout << md->obj_points[no_of_vertices].x << md->obj_points[no_of_vertices].y << md->obj_points[no_of_vertices].z << endl;
 			no_of_vertices++;
 		}
 		else if (temp == "vn") {
@@ -391,7 +339,6 @@ void ReadFile(model *md) {
 			string_stream >> md->obj_normals[no_of_normals].x;
 			string_stream >> md->obj_normals[no_of_normals].y;
 			string_stream >> md->obj_normals[no_of_normals].z;
-			//	cout << md->obj_normals[no_of_normals].x << md->obj_normals[no_of_normals].y << md->obj_normals[no_of_normals].z << endl;
 			no_of_normals++;
 		}
 		else if (temp == "f ") {
@@ -402,7 +349,6 @@ void ReadFile(model *md) {
 				string_stream >> md->obj_faces[no_of_faces].vtn[i];
 				if (i == 2) break;
 				string_stream.ignore(1);
-				//	cout << md->obj_faces[no_of_faces].vtx[i] << md->obj_faces[no_of_faces].vtn[i] << endl;
 			}
 			no_of_faces++;
 		}
